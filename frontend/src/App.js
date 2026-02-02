@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import API_URL from './config';
 import './App.css'; 
+import Navbar from './components/Navbar';
 
 function App() {
   const [aiMessage, setAiMessage] = useState('');
