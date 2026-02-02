@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import API_URL from '../config';
 
 const QuizModal = ({ onClose, problemTitle }) => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -48,7 +49,7 @@ const QuizModal = ({ onClose, problemTitle }) => {
     try {
       const percentage = (finalScore / questions.length) * 100;
       
-      const response = await fetch('http://localhost:5000/api/ai/analyze', {
+      const response = await fetch(`${API_URL}/api/ai/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

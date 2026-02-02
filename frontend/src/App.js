@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import API_URL from './config';
 import './App.css'; 
 
 function App() {
@@ -6,7 +7,7 @@ function App() {
 
   // Function to call the Backend AI
   const getAIRecommendation = async () => {
-    const response = await fetch('http://localhost:5000/api/ai/recommend', {
+    const response = await fetch(`${API_URL}/api/ai/recommend`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userSkills: ['React'], quizScore: 90 }) 
