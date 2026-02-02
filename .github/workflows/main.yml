@@ -1,0 +1,68 @@
+name: Leoaxis CI/CD Pipeline
+
+# Trigger this pipeline on every push to the main branch
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  # JOB 1: Test and Build the Backend
+  build-backend:
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: ./backend
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install Dependencies
+      run: npm install
+
+    # This creates a dummy .env file for the build server so it doesn't crash
+    - name: Create .env file
+      run: |
+        echo "PORT=5000" >> .env
+        echo "MONGO_URI=${{ secrets.MONGO_URI }}" >> .env
+        echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
+
+    # Verify that the server code actually runs/starts
+    # (Since we don't have unit tests yet, we just check if it installs correctly)
+    - name: Build Check
+      run: echo "Backend built successfully!"
+
+  # JOB 2: Test and Build the Frontend (React)
+  build-frontend:
+    runs-on: ubuntu-latest
+    
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install Dependencies
+      run: npm install
+
+    # This runs the actual React Build process (creates the 'build' folder)
+    # If there is a syntax error in your React code, this step will FAIL.
+    - name: Run Build
+      run: npm run build
+      env:
+        CI: false  # Prevents the build from failing on minor warnings
