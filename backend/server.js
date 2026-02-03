@@ -1,71 +1,81 @@
 const express = require('express');
-const mongoose = require('mongoose');
+const dotenv = require('dotenv');
 const cors = require('cors');
-const { GoogleGenerativeAI } = require("@google/generative-ai");
-require('dotenv').config(); // Load environment variables
+const morgan = require('morgan');
+const connectDB = require('./config/db');
+const { errorHandler, notFound } = require('./middleware/errorMiddleware');
 
+// Load environment variables
+dotenv.config();
+
+// Connect to MongoDB
+connectDB();
+
+// Initialize Express app
 const app = express();
 
 // Middleware
-app.use(cors());
-app.use(express.json());
+app.use(express.json()); // Parse JSON bodies
+app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
+app.use(cors()); // Enable CORS for all routes
 
-// --- 1. MONGODB CONNECTION (Auto-Initializes DB) ---
-// Docker will create a database named 'leoaxis' automatically if it doesn't exist.
-const connectDB = async () => {
-  try {
-    // This URL connects to the Docker container named 'mongo'
-    await mongoose.connect(process.env.MONGO_URI || 'mongodb://mongo:27017/leoaxis');
-    console.log('✅ MongoDB Connected Successfully');
-  } catch (err) {
-    console.log('❌ MongoDB Error (Waiting for container...):', err.message);
-    setTimeout(connectDB, 5000); // Retry after 5 seconds
-  }
-};
-connectDB();
+// Logging middleware (only in development)
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
 
-// --- 2. DEFINE DATA MODELS (Schemas) ---
-const UserSchema = new mongoose.Schema({
-    name: String,
-    skills: [String],
-    quizHistory: [{ topic: String, score: Number, date: Date }]
-});
-const User = mongoose.model('User', UserSchema);
-
-// --- 3. REAL AI INTEGRATION (Gemini) ---
-// Initialize Gemini
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-app.post('/api/ai/analyze', async (req, res) => {
-  const { topic, score, wrongAnswers } = req.body;
-
-  try {
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-
-    // The Prompt we send to the AI
-    const prompt = `
-      Act as a Senior Technical Mentor at Leoaxis Technologies.
-      A student just took a quiz on "${topic}" and scored ${score}%.
-      They struggled with these specific concepts: ${wrongAnswers.join(", ")}.
-      
-      Provide a JSON response with:
-      1. A short encouraging feedback message.
-      2. A specific "Next Step" recommendation (e.g., a project or specific topic to study).
-      3. A list of 3 resource titles they should look up.
-    `;
-
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
-
-    res.json({ ai_feedback: text });
-  } catch (error) {
-    console.error("AI Error:", error);
-    res.status(500).json({ ai_feedback: "AI is currently offline. Focus on reviewing your loop syntax!" });
-  }
+// Health check route
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: '🚀 Leoaxis AI Learning Platform API',
+    version: '1.0.0',
+    status: 'operational',
+    endpoints: {
+      auth: '/api/auth',
+      courses: '/api/courses',
+      ai: '/api/ai'
+    },
+    documentation: 'https://github.com/leoaxis/api-docs'
+  });
 });
 
-app.get('/', (req, res) => res.send('Leoaxis API is Live'));
+// API Routes
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/courses', require('./routes/courseRoutes'));
+app.use('/api/ai', require('./routes/aiRoutes'));
 
+// 404 Error Handler (must be after all routes)
+app.use(notFound);
+
+// Custom Error Handler (must be last)
+app.use(errorHandler);
+
+// Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+const server = app.listen(PORT, () => {
+  console.log('═══════════════════════════════════════════════════════');
+  console.log(`🚀 Server running in ${process.env.NODE_ENV} mode`);
+  console.log(`📍 Server URL: http://localhost:${PORT}`);
+  console.log(`🔗 API Base: http://localhost:${PORT}/api`);
+  console.log('═══════════════════════════════════════════════════════');
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err) => {
+  console.error('❌ Unhandled Promise Rejection:', err);
+  // Close server & exit process
+  server.close(() => process.exit(1));
+});
+
+// Handle SIGTERM
+process.on('SIGTERM', () => {
+  console.log('👋 SIGTERM received. Closing server gracefully...');
+  server.close(() => {
+    console.log('💤 Server closed');
+    process.exit(0);
+  });
+});
+
+module.exports = app;
