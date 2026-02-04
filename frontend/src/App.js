@@ -35,7 +35,7 @@ function App() {
           <button onClick={getAIRecommendation} className="btn-ai">
             Get AI Career Advice
           </button>
-          {aiMessage && <div className="ai-box">🤖 AI Says: {aiMessage}</div>}
+          {aiMessage && <div className="ai-box"> AI Says: {aiMessage}</div>}
         </header>
 
         {/* Practice Section (From Screenshot 2) */}

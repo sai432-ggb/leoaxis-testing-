@@ -92,7 +92,7 @@ const QuizModal = ({ onClose, problemTitle }) => {
             <p className="score-text">You scored: {score} / {questions.length}</p>
             
             <div className="ai-feedback-box">
-              <h4>🤖 Leoaxis Mentor says:</h4>
+              <h4> Leoaxis Mentor says:</h4>
               <p>{aiFeedback}</p>
             </div>
             

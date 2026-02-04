@@ -264,26 +264,26 @@ const seedDatabase = async () => {
   try {
     // Connect to MongoDB
     await mongoose.connect(process.env.MONGO_URI);
-    console.log('✅ MongoDB Connected');
+    console.log(' MongoDB Connected');
 
     // Clear existing data
     await Course.deleteMany();
-    console.log('🗑️  Cleared existing courses');
+    console.log('  Cleared existing courses');
 
     // Insert sample courses
     const createdCourses = await Course.insertMany(courses);
-    console.log(`✅ ${createdCourses.length} courses seeded successfully`);
+    console.log(` ${createdCourses.length} courses seeded successfully`);
 
-    console.log('\n📚 Seeded Courses:');
+    console.log('\n Seeded Courses:');
     createdCourses.forEach(course => {
       console.log(`  - ${course.name} (${course.level})`);
     });
 
-    console.log('\n✨ Database seeding completed!');
+    console.log('\n Database seeding completed!');
     process.exit(0);
 
   } catch (error) {
-    console.error('❌ Error seeding database:', error);
+    console.error(' Error seeding database:', error);
     process.exit(1);
   }
 };

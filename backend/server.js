@@ -28,7 +28,7 @@ if (process.env.NODE_ENV === 'development') {
 app.get('/', (req, res) => {
   res.json({
     success: true,
-    message: '🚀 Leoaxis AI Learning Platform API',
+    message: ' Leoaxis AI Learning Platform API',
     version: '1.0.0',
     status: 'operational',
     endpoints: {
@@ -56,15 +56,15 @@ const PORT = process.env.PORT || 5000;
 
 const server = app.listen(PORT, () => {
   console.log('═══════════════════════════════════════════════════════');
-  console.log(`🚀 Server running in ${process.env.NODE_ENV} mode`);
-  console.log(`📍 Server URL: http://localhost:${PORT}`);
-  console.log(`🔗 API Base: http://localhost:${PORT}/api`);
+  console.log(` Server running in ${process.env.NODE_ENV} mode`);
+  console.log(` Server URL: http://localhost:${PORT}`);
+  console.log(` API Base: http://localhost:${PORT}/api`);
   console.log('═══════════════════════════════════════════════════════');
 });
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
-  console.error('❌ Unhandled Promise Rejection:', err);
+  console.error(' Unhandled Promise Rejection:', err);
   // Close server & exit process
   server.close(() => process.exit(1));
 });
